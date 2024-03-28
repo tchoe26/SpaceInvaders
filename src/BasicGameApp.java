@@ -41,19 +41,23 @@ public class BasicGameApp implements Runnable, KeyListener {
 	public JFrame frame;
 	public Canvas canvas;
 	public JPanel panel;
-	public Color c = new Color (255, 255, 255);
-	public int scoreCounter1=0;
-	public int scoreCounter2=0;
+	public Color c = new Color(255, 255, 255);
+	public int scoreCounter1 = 0;
+	public int scoreCounter2 = 0;
 	public BufferStrategy bufferStrategy;
 	public Image spaceshipPic;
 	public Image blackBackground;
+	public Image invaderPic;
 	public Image winScreen1;
 	public Image winScreen2;
-
+	public int bulletCounter;
 	private Astronaut spaceship;
-
-	Astronaut[] bullet = new Astronaut [9999];
+	Astronaut[][] invader = new Astronaut[9999][9999];
+	Astronaut[] bullet = new Astronaut[9999];
 	public Image bulletPic;
+	int bulletRows = 5;
+	int bulletColumns=12;
+
 
 
 	// Main method definition
@@ -65,8 +69,12 @@ public class BasicGameApp implements Runnable, KeyListener {
 
 
 	void shootBullet() {
-		System.out.println("test");
+		bullet[bulletCounter].xpos = spaceship.xpos + 45;
+		bullet[bulletCounter].ypos = spaceship.ypos + 10;
+		bullet[bulletCounter].dy = -50;
+		bulletCounter++;
 	}
+
 	// Constructor Method
 	// This has the same name as the class
 	// This section is the setup portion of the program
@@ -77,16 +85,22 @@ public class BasicGameApp implements Runnable, KeyListener {
 
 		//spaceship
 		spaceshipPic = Toolkit.getDefaultToolkit().getImage("spaceShip.png"); //load the picture
-		spaceship = new Astronaut(250, 600, 100, 100, 0, 0, 1);
+		spaceship = new Astronaut(250, 600, 100, 100, 0, 0, false);
 
 		blackBackground = Toolkit.getDefaultToolkit().getImage("blackBackground.png");
 
 		//bullet
 		bulletPic = Toolkit.getDefaultToolkit().getImage("bullet.png");
-		for (int i=0; i<bullet.length; i++) {
-			bullet[i] = new Astronaut (-100, -100, 10, 30, 0, 0, i+100);
+		for (int i = 0; i < bullet.length; i++) {
+			bullet[i] = new Astronaut(-100, 500, 2, 10, 0, 0, false);
 		}
-
+		//invaders
+		invaderPic = Toolkit.getDefaultToolkit().getImage("spaceinvader2.png");
+		for (int i = 0; i < bulletRows; i++) {
+			for (int j = 0; j < bulletColumns; j++) {
+				invader[i][j] = new Astronaut(10 + (40 * j), 50 + (50 * i), 40, 30, 0, 0, false);
+			}
+		}
 		winScreen1 = Toolkit.getDefaultToolkit().getImage("winScreen1.png");
 		winScreen2 = Toolkit.getDefaultToolkit().getImage("winScreen2.png");
 
@@ -113,7 +127,8 @@ public class BasicGameApp implements Runnable, KeyListener {
 			pause(20); // sleep for 10 ms
 		}
 	}
-	public void pause(int time ){
+
+	public void pause(int time) {
 		//sleep
 		try {
 			Thread.sleep(time);
@@ -124,10 +139,43 @@ public class BasicGameApp implements Runnable, KeyListener {
 
 	public void moveThings() {
 		spaceship.move();
+		//limit movement to screen
+		if (spaceship.xpos<-25) {
+			spaceship.xpos=-25;
+		}
+		if (spaceship.xpos>525-spaceship.width) {
+			spaceship.xpos=525-spaceship.width;
+		}
+		for (int t=0; t<bulletRows; t++) {
+			for (int v=0; v<bulletColumns; v++) {
+				invader[t][v].dx=3;
+				invader[t][v].wrap();
+
+			}
+		}
+		for (int i = 0; i < bullet.length; i++) {
+			bullet[i].move();
+			//bullet life (optimization)
+			for (int z=0; z<bullet.length; z++) {
+				if (bullet[i].ypos<-20) {
+					bullet[i].isAlive=false;
+				}
+			}
+			//shooting invaders
+			for (int j=0; j<bulletRows; j++) {
+				for (int k=0; k<bulletColumns; k++) {
+					if (bullet[i].rec.intersects(invader[j][k].rec) && invader[j][k].isAlive && bullet[i].isAlive) {
+						invader[j][k].isAlive=false;
+						bullet[i].isAlive=false;
+
+					}
+
+				}
+			}
+
+		}
+
 	}
-
-
-
 
 
 	//Graphics setup method
@@ -167,23 +215,29 @@ public class BasicGameApp implements Runnable, KeyListener {
 		Graphics2D g = (Graphics2D) bufferStrategy.getDrawGraphics();
 		g.clearRect(0, 0, WIDTH, HEIGHT);
 
-		if (scoreCounter1<10 && scoreCounter2<10){
+		if (scoreCounter1 < 10 && scoreCounter2 < 10) {
 			//draw the image of the astronaut
 			g.drawImage(blackBackground, 0, 0, WIDTH, HEIGHT, null);
 
 			g.drawImage(spaceshipPic, spaceship.xpos, spaceship.ypos, spaceship.width, spaceship.height, null);
 
+			for (int i = 0; i < bullet.length; i++) {
+				if (bullet[i].isAlive) {
+					g.drawImage(bulletPic, bullet[i].xpos, bullet[i].ypos, bullet[i].width, bullet[i].height, null);
+				}
+			}
+			for (int i = 0; i < bulletRows; i++)
+				for (int j = 0; j < bulletColumns; j++) {
+					if (invader[i][j].isAlive) {
+						g.drawImage(invaderPic, invader[i][j].xpos, invader[i][j].ypos, invader[i][j].width, invader[i][j].height, null);
+					}
 
+				}
 		}
-
-
-
-
 		g.dispose();
-
 		bufferStrategy.show();
-
 	}
+
 
 	@Override
 	public void keyTyped(KeyEvent e) {
