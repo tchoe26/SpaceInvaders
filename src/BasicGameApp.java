@@ -56,9 +56,11 @@ public class BasicGameApp implements Runnable, KeyListener {
 	Astronaut[] bullet = new Astronaut[9999];
 	public Image bulletPic;
 	int bulletRows = 5;
-	int bulletColumns=12;
+	int bulletColumns=13;
+	boolean isCooldown;
 
-
+	int timeSinceShot;
+	int shootTime;
 
 	// Main method definition
 	// This is the code that runs first and automatically
@@ -73,6 +75,7 @@ public class BasicGameApp implements Runnable, KeyListener {
 		bullet[bulletCounter].ypos = spaceship.ypos + 10;
 		bullet[bulletCounter].dy = -50;
 		bulletCounter++;
+		shootTime = (int) System.currentTimeMillis();
 	}
 
 	// Constructor Method
@@ -98,7 +101,7 @@ public class BasicGameApp implements Runnable, KeyListener {
 		invaderPic = Toolkit.getDefaultToolkit().getImage("spaceinvader2.png");
 		for (int i = 0; i < bulletRows; i++) {
 			for (int j = 0; j < bulletColumns; j++) {
-				invader[i][j] = new Astronaut(10 + (40 * j), 50 + (50 * i), 40, 30, 0, 0, false);
+				invader[i][j] = new Astronaut(10 + (41 * j), 50 + (50 * i), 40, 30, 0, 0, false);
 			}
 		}
 		winScreen1 = Toolkit.getDefaultToolkit().getImage("winScreen1.png");
@@ -138,6 +141,8 @@ public class BasicGameApp implements Runnable, KeyListener {
 	}
 
 	public void moveThings() {
+		timeSinceShot = (int)(System.currentTimeMillis()-shootTime);
+		System.out.println(timeSinceShot);
 		spaceship.move();
 		//limit movement to screen
 		if (spaceship.xpos<-25) {
@@ -252,8 +257,10 @@ public class BasicGameApp implements Runnable, KeyListener {
 		if (e.getKeyCode()==68) {
 			spaceship.spaceshipIsRight = true;
 		}
-		if (e.getKeyCode() ==32) {
+		if (e.getKeyCode() ==32 && !isCooldown && (timeSinceShot>200 || timeSinceShot<1)) {
 			shootBullet();
+			
+			isCooldown=true;
 		}
 
 	}
@@ -266,7 +273,9 @@ public class BasicGameApp implements Runnable, KeyListener {
 		if (e.getKeyCode()==68) {
 			spaceship.spaceshipIsRight = false;
 		}
-
+		if (e.getKeyCode() ==32) {
+			isCooldown=false;
+		}
 
 	}
 

@@ -74,7 +74,6 @@ public class Astronaut {
             xpos=500;
         }
         if (xpos>500) {
-            System.out.println("hi");
             xpos= -width;
 
         }
