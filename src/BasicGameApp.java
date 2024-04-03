@@ -51,7 +51,7 @@ public class BasicGameApp implements Runnable, KeyListener {
 	public Image winScreen1;
 	public Image winScreen2;
 	public int bulletCounter;
-	private Astronaut spaceship;
+	private final Astronaut spaceship;
 	Astronaut[][] invader = new Astronaut[9999][9999];
 	Astronaut[] bullet = new Astronaut[9999];
 	public Image bulletPic;
@@ -89,7 +89,7 @@ public class BasicGameApp implements Runnable, KeyListener {
 		//spaceship
 		spaceshipPic = Toolkit.getDefaultToolkit().getImage("spaceShip.png"); //load the picture
 		spaceship = new Astronaut(250, 600, 100, 100, 0, 0, false);
-
+		spaceship.isControllable = true;
 		blackBackground = Toolkit.getDefaultToolkit().getImage("blackBackground.png");
 
 		//bullet
@@ -141,8 +141,11 @@ public class BasicGameApp implements Runnable, KeyListener {
 	}
 
 	public void moveThings() {
+
+		//invaders attack (move down)
+
+
 		timeSinceShot = (int)(System.currentTimeMillis()-shootTime);
-		System.out.println(timeSinceShot);
 		spaceship.move();
 		//limit movement to screen
 		if (spaceship.xpos<-25) {
@@ -153,32 +156,34 @@ public class BasicGameApp implements Runnable, KeyListener {
 		}
 		for (int t=0; t<bulletRows; t++) {
 			for (int v=0; v<bulletColumns; v++) {
-				invader[t][v].dx=3;
 				invader[t][v].wrap();
+				//invader[t][v].dx=3;
 
 			}
 		}
-		for (int i = 0; i < bullet.length; i++) {
-			bullet[i].move();
-			//bullet life (optimization)
-			for (int z=0; z<bullet.length; z++) {
-				if (bullet[i].ypos<-20) {
-					bullet[i].isAlive=false;
-				}
-			}
-			//shooting invaders
-			for (int j=0; j<bulletRows; j++) {
-				for (int k=0; k<bulletColumns; k++) {
-					if (bullet[i].rec.intersects(invader[j][k].rec) && invader[j][k].isAlive && bullet[i].isAlive) {
-						invader[j][k].isAlive=false;
-						bullet[i].isAlive=false;
+        for (Astronaut astronaut : bullet) {
+            astronaut.move();
+            //bullet life (optimization)
+            for (int z = 0; z < bullet.length; z++) {
+                if (astronaut.ypos < -20) {
+                    astronaut.isAlive = false;
+                    break;
+                }
+            }
 
-					}
+            //shooting invaders
+            for (int j = 0; j < bulletRows; j++) {
+                for (int k = 0; k < bulletColumns; k++) {
+                    if (astronaut.rec.intersects(invader[j][k].rec) && invader[j][k].isAlive && astronaut.isAlive) {
+                        invader[j][k].isAlive = false;
+                        astronaut.isAlive = false;
 
-				}
-			}
+                    }
 
-		}
+                }
+            }
+
+        }
 
 	}
 
@@ -226,18 +231,19 @@ public class BasicGameApp implements Runnable, KeyListener {
 
 			g.drawImage(spaceshipPic, spaceship.xpos, spaceship.ypos, spaceship.width, spaceship.height, null);
 
-			for (int i = 0; i < bullet.length; i++) {
-				if (bullet[i].isAlive) {
-					g.drawImage(bulletPic, bullet[i].xpos, bullet[i].ypos, bullet[i].width, bullet[i].height, null);
-				}
-			}
-			for (int i = 0; i < bulletRows; i++)
+            for (Astronaut astronaut : bullet) {
+                if (astronaut.isAlive) {
+                    g.drawImage(bulletPic, astronaut.xpos, astronaut.ypos, astronaut.width, astronaut.height, null);
+                }
+            }
+			for (int i = 0; i < bulletRows; i++) {
 				for (int j = 0; j < bulletColumns; j++) {
 					if (invader[i][j].isAlive) {
 						g.drawImage(invaderPic, invader[i][j].xpos, invader[i][j].ypos, invader[i][j].width, invader[i][j].height, null);
 					}
 
 				}
+			}
 		}
 		g.dispose();
 		bufferStrategy.show();
@@ -257,12 +263,21 @@ public class BasicGameApp implements Runnable, KeyListener {
 		if (e.getKeyCode()==68) {
 			spaceship.spaceshipIsRight = true;
 		}
-		if (e.getKeyCode() ==32 && !isCooldown && (timeSinceShot>200 || timeSinceShot<1)) {
+		if (e.getKeyCode() ==32 && !isCooldown && (timeSinceShot>150 || timeSinceShot<1)) {
 			shootBullet();
 			
 			isCooldown=true;
 		}
 
+		//reset game
+		if (e.getKeyCode() ==82) {
+			System.out.println("test");
+			int temp1 = ((int)(Math.random()*bulletRows));
+			int temp2 = ((int)(Math.random()*bulletColumns));
+			invader[temp1][temp2].dx = (int)(Math.random()*8)-4;
+			System.out.println(invader[temp1][temp2].dx );
+			invader[temp1][temp2].dy = 5;
+		}
 	}
 
 	@Override

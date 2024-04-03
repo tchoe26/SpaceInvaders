@@ -24,6 +24,7 @@ public class Astronaut {
     public boolean spaceshipIsLeft;
 
     public boolean spaceshipIsRight;
+    public boolean isControllable;
 
 
 
@@ -46,6 +47,7 @@ public class Astronaut {
         isAlive = true;
         rec = new Rectangle(xpos, ypos, width, height);
         isBouncing=false;
+        isControllable = false;
         isShot = pIsShot; // to allow for paddle-specific instructions in the move method
     } // constructor
 
@@ -55,17 +57,17 @@ public class Astronaut {
         ypos = ypos + dy;
         rec = new Rectangle(xpos, ypos, width, height);
 
-
-        if (spaceshipIsLeft) {
+        if (isControllable) {
+            if (spaceshipIsLeft) {
                 dx = -10;
-        }
-        if (!spaceshipIsLeft && !spaceshipIsRight) {
+            }
+            if (!spaceshipIsLeft && !spaceshipIsRight) {
                 dx = 0;
-        }
-        if (spaceshipIsRight) {
+            }
+            if (spaceshipIsRight) {
                 dx = 10;
+            }
         }
-
 
 
     }
