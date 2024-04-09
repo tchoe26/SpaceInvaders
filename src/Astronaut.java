@@ -21,6 +21,7 @@ public class Astronaut {
     boolean isBouncing;
     //a boolean to denote if the hero is alive or dead.
     public Rectangle rec;
+    public Rectangle rec2;
     public boolean spaceshipIsLeft;
 
     public boolean spaceshipIsRight;
@@ -46,6 +47,7 @@ public class Astronaut {
         height = pHeight;
         isAlive = true;
         rec = new Rectangle(xpos, ypos, width, height);
+        rec2 = new Rectangle(xpos+5, ypos, width-10, height);
         isBouncing=false;
         isControllable = false;
         isShot = pIsShot; // to allow for paddle-specific instructions in the move method
@@ -109,15 +111,11 @@ public class Astronaut {
         if (!(ypos<10||ypos>(690-height))) {
             isBouncing = false;
         }
+
         move();
     }
 
 
-    public void returnPaddle() {
-
-        //dont worry about the method i was trying to do something and it didn't work so now it's simple
-        ypos = 300;
-    }
 }
 
 

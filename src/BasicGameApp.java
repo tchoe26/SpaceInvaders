@@ -61,9 +61,10 @@ public class BasicGameApp implements Runnable, KeyListener {
 
 	int timeSinceShot;
 	int shootTime;
+	int contactCounter;
 
 	// Main method definition
-	// This is the code that runs first and automatically
+	// This is the code that runs first and automaticallyddddd
 	public static void main(String[] args) {
 		BasicGameApp ex = new BasicGameApp();   //creates a new instance of the game
 		new Thread(ex).start();                 //creates a threads & starts up the code in the run( ) method
@@ -121,7 +122,10 @@ public class BasicGameApp implements Runnable, KeyListener {
 	// main thread
 	// this is the code that plays the game after you set things up
 	public void run() {
-
+		spaceship.rec.x = spaceship.rec.x+25;
+		spaceship.rec.y = spaceship.rec.y+25;
+		spaceship.rec.width = 1;
+		spaceship.rec.height = 1;
 		//for the moment we will loop things forever.
 		while (true) {
 
@@ -142,8 +146,25 @@ public class BasicGameApp implements Runnable, KeyListener {
 
 	public void moveThings() {
 
-		//invaders attack (move down)
+		//alien descent
+		if ((int)(Math.random()*30)==1){
+			int temp1 = ((int)(Math.random()*bulletRows));
+			int temp2 = ((int)(Math.random()*bulletColumns));
+			invader[temp1][temp2].dx = (int)(Math.random()*8)-4;
+			invader[temp1][temp2].dy = 5;
+		}
 
+		//player dies
+		for (int t=0; t<bulletRows; t++) {
+			for (int v=0; v<bulletColumns; v++) {
+                if (invader[t][v].rec.intersects(spaceship.rec) && invader[t][v].isAlive && invader[t][v].ypos==600) {
+					spaceship.isAlive = false;
+					break;
+				}
+				//invader[t][v].dx=3;
+
+			}
+		}
 
 		timeSinceShot = (int)(System.currentTimeMillis()-shootTime);
 		spaceship.move();
@@ -225,12 +246,13 @@ public class BasicGameApp implements Runnable, KeyListener {
 		Graphics2D g = (Graphics2D) bufferStrategy.getDrawGraphics();
 		g.clearRect(0, 0, WIDTH, HEIGHT);
 
-		if (scoreCounter1 < 10 && scoreCounter2 < 10) {
+		if (spaceship.isAlive) {
 			//draw the image of the astronaut
 			g.drawImage(blackBackground, 0, 0, WIDTH, HEIGHT, null);
 
-			g.drawImage(spaceshipPic, spaceship.xpos, spaceship.ypos, spaceship.width, spaceship.height, null);
-
+			if (spaceship.isAlive) {
+				g.drawImage(spaceshipPic, spaceship.xpos, spaceship.ypos, spaceship.width, spaceship.height, null);
+			}
             for (Astronaut astronaut : bullet) {
                 if (astronaut.isAlive) {
                     g.drawImage(bulletPic, astronaut.xpos, astronaut.ypos, astronaut.width, astronaut.height, null);
@@ -269,15 +291,7 @@ public class BasicGameApp implements Runnable, KeyListener {
 			isCooldown=true;
 		}
 
-		//reset game
-		if (e.getKeyCode() ==82) {
-			System.out.println("test");
-			int temp1 = ((int)(Math.random()*bulletRows));
-			int temp2 = ((int)(Math.random()*bulletColumns));
-			invader[temp1][temp2].dx = (int)(Math.random()*8)-4;
-			System.out.println(invader[temp1][temp2].dx );
-			invader[temp1][temp2].dy = 5;
-		}
+		//reset gamed
 	}
 
 	@Override
