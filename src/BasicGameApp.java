@@ -58,10 +58,12 @@ public class BasicGameApp implements Runnable, KeyListener {
 	int bulletRows = 5;
 	int bulletColumns=13;
 	boolean isCooldown;
+	public Image endscreen;
 
 	int timeSinceShot;
 	int shootTime;
-	int contactCounter;
+	int score;
+	int level=1;
 
 	// Main method definition
 	// This is the code that runs first and automaticallyddddd
@@ -107,7 +109,7 @@ public class BasicGameApp implements Runnable, KeyListener {
 		}
 		winScreen1 = Toolkit.getDefaultToolkit().getImage("winScreen1.png");
 		winScreen2 = Toolkit.getDefaultToolkit().getImage("winScreen2.png");
-
+		endscreen = Toolkit.getDefaultToolkit().getImage("endscreen.png");
 		//10 objects
 
 
@@ -157,7 +159,7 @@ public class BasicGameApp implements Runnable, KeyListener {
 		//player dies
 		for (int t=0; t<bulletRows; t++) {
 			for (int v=0; v<bulletColumns; v++) {
-                if (invader[t][v].rec.intersects(spaceship.rec) && invader[t][v].isAlive && invader[t][v].ypos==600) {
+                if (invader[t][v].rec.intersects(spaceship.rec2) && invader[t][v].isAlive) {
 					spaceship.isAlive = false;
 					break;
 				}
@@ -177,7 +179,7 @@ public class BasicGameApp implements Runnable, KeyListener {
 		}
 		for (int t=0; t<bulletRows; t++) {
 			for (int v=0; v<bulletColumns; v++) {
-				invader[t][v].wrap();
+				invader[t][v].specialBounce();
 				//invader[t][v].dx=3;
 
 			}
@@ -198,6 +200,7 @@ public class BasicGameApp implements Runnable, KeyListener {
                     if (astronaut.rec.intersects(invader[j][k].rec) && invader[j][k].isAlive && astronaut.isAlive) {
                         invader[j][k].isAlive = false;
                         astronaut.isAlive = false;
+						score=score+100*level;
 
                     }
 
@@ -250,9 +253,8 @@ public class BasicGameApp implements Runnable, KeyListener {
 			//draw the image of the astronaut
 			g.drawImage(blackBackground, 0, 0, WIDTH, HEIGHT, null);
 
-			if (spaceship.isAlive) {
-				g.drawImage(spaceshipPic, spaceship.xpos, spaceship.ypos, spaceship.width, spaceship.height, null);
-			}
+			g.drawImage(spaceshipPic, spaceship.xpos, spaceship.ypos, spaceship.width, spaceship.height, null);
+
             for (Astronaut astronaut : bullet) {
                 if (astronaut.isAlive) {
                     g.drawImage(bulletPic, astronaut.xpos, astronaut.ypos, astronaut.width, astronaut.height, null);
@@ -265,7 +267,13 @@ public class BasicGameApp implements Runnable, KeyListener {
 					}
 
 				}
+
 			}
+			g.setFont(new Font("Ser", Font.PLAIN, 30));
+			g.setColor(c);
+			g.drawString(String.valueOf(score), 250, 50);
+		} else {
+			g.drawImage(endscreen, 0, 0, 500, 700, null);
 		}
 		g.dispose();
 		bufferStrategy.show();

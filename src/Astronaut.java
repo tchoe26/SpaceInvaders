@@ -47,7 +47,7 @@ public class Astronaut {
         height = pHeight;
         isAlive = true;
         rec = new Rectangle(xpos, ypos, width, height);
-        rec2 = new Rectangle(xpos+5, ypos, width-10, height);
+        rec2 = new Rectangle(xpos+20, ypos+20, width-40, height-40);
         isBouncing=false;
         isControllable = false;
         isShot = pIsShot; // to allow for paddle-specific instructions in the move method
@@ -58,6 +58,7 @@ public class Astronaut {
         xpos = xpos + dx;
         ypos = ypos + dy;
         rec = new Rectangle(xpos, ypos, width, height);
+        rec2 = new Rectangle(xpos+20, ypos+20, width-40, height-40);
 
         if (isControllable) {
             if (spaceshipIsLeft) {
@@ -89,7 +90,7 @@ public class Astronaut {
         }
         move();
     }
-    public void bounce() {
+    public void specialBounce() {
         if ((xpos<0||xpos>(500-width)) && !isBouncing) {
             dx = -dx;
             isBouncing=true;
@@ -97,19 +98,11 @@ public class Astronaut {
         if (!(xpos<0||xpos>(500-width))) {
             isBouncing=false;
         }
-        if ((ypos<0) && !isBouncing) {
-            dy = -dy;
-            System.out.println(ypos);
-            ypos=0;
-            isBouncing=true;
+        if ((ypos+height)<0) {
+            ypos=700;
         }
-        if (ypos>(690-height)) {
-            dy=-dy;
-            ypos = 690-height;
-            isBouncing=true;
-        }
-        if (!(ypos<10||ypos>(690-height))) {
-            isBouncing = false;
+        if (ypos>700) {
+            ypos = -height;
         }
 
         move();
