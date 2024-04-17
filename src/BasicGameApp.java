@@ -59,11 +59,13 @@ public class BasicGameApp implements Runnable, KeyListener {
 	int bulletColumns=13;
 	boolean isCooldown;
 	public Image endscreen;
+//	boolean allDead = true;
 
 	int timeSinceShot;
 	int shootTime;
 	int score;
 	int level=1;
+	int lives=3;
 
 	// Main method definition
 	// This is the code that runs first and automaticallyddddd
@@ -128,6 +130,8 @@ public class BasicGameApp implements Runnable, KeyListener {
 		spaceship.rec.y = spaceship.rec.y+25;
 		spaceship.rec.width = 1;
 		spaceship.rec.height = 1;
+
+
 		//for the moment we will loop things forever.
 		while (true) {
 
@@ -148,28 +152,43 @@ public class BasicGameApp implements Runnable, KeyListener {
 
 	public void moveThings() {
 
+		for (int t=0; t<bulletRows; t++) {
+			for (int v=0; v<bulletColumns; v++) {
+				invader[t][v].wrap();
+				//invader[t][v].dx=3;
+
+			}
+		}
+		spaceship.move();
+
+
 		//alien descent
 		if ((int)(Math.random()*30)==1){
 			int temp1 = ((int)(Math.random()*bulletRows));
 			int temp2 = ((int)(Math.random()*bulletColumns));
-			invader[temp1][temp2].dx = (int)(Math.random()*8)-4;
-			invader[temp1][temp2].dy = 5;
+			invader[temp1][temp2].dx = ((int)(Math.random()*8)-4);
+			invader[temp1][temp2].dy = 3+(2*level);
 		}
 
 		//player dies
 		for (int t=0; t<bulletRows; t++) {
 			for (int v=0; v<bulletColumns; v++) {
                 if (invader[t][v].rec.intersects(spaceship.rec2) && invader[t][v].isAlive) {
-					spaceship.isAlive = false;
+					lives=lives-1;
+					pause(1000);
+					reset();
 					break;
 				}
 				//invader[t][v].dx=3;
 
 			}
 		}
+		if (lives==0) {
+			spaceship.isAlive=false;
+		}
 
 		timeSinceShot = (int)(System.currentTimeMillis()-shootTime);
-		spaceship.move();
+
 		//limit movement to screen
 		if (spaceship.xpos<-25) {
 			spaceship.xpos=-25;
@@ -177,13 +196,7 @@ public class BasicGameApp implements Runnable, KeyListener {
 		if (spaceship.xpos>525-spaceship.width) {
 			spaceship.xpos=525-spaceship.width;
 		}
-		for (int t=0; t<bulletRows; t++) {
-			for (int v=0; v<bulletColumns; v++) {
-				invader[t][v].specialBounce();
-				//invader[t][v].dx=3;
 
-			}
-		}
         for (Astronaut astronaut : bullet) {
             astronaut.move();
             //bullet life (optimization)
@@ -208,6 +221,37 @@ public class BasicGameApp implements Runnable, KeyListener {
             }
 
         }
+
+		//level increase
+		boolean allDead = true;
+		int numalive = 0;
+		for (int j = 0; j < bulletRows; j++) {
+			for (int k = 0; k < bulletColumns; k++) {
+				if (invader[j][k].isAlive) {
+					allDead=false;
+					numalive++;
+					//System.out.println("test");
+					//break;
+				}
+			}
+		}
+		//if
+		if (allDead) {
+			System.out.println("all dead");
+			level+=1;
+			reset();
+		} else{
+			System.out.println("alive" + numalive);
+		}
+
+	}
+
+	public void reset() {
+		for (int i = 0; i < bulletRows; i++) {
+			for (int j = 0; j < bulletColumns; j++) {
+				invader[i][j] = new Astronaut(10 + (41 * j), 50 + (50 * i), 40, 30, 0, 0, false);
+			}
+		}
 
 	}
 
@@ -269,9 +313,17 @@ public class BasicGameApp implements Runnable, KeyListener {
 				}
 
 			}
-			g.setFont(new Font("Ser", Font.PLAIN, 30));
+			g.setFont(new Font("Ser", Font.PLAIN, 20));
 			g.setColor(c);
-			g.drawString(String.valueOf(score), 250, 50);
+			//score
+			g.drawString("Score:", 160, 40);
+			g.drawString(String.valueOf(score), 220, 40);
+			//lives
+			g.drawString("lives:", 20, 40);
+			g.drawString(String.valueOf(lives), 80, 40);
+			//level
+			g.drawString("level:", 340, 40);
+			g.drawString(String.valueOf(level), 390, 40);
 		} else {
 			g.drawImage(endscreen, 0, 0, 500, 700, null);
 			g.setFont(new Font("Ser", Font.PLAIN, 50));

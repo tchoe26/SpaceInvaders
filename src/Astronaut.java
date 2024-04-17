@@ -47,7 +47,7 @@ public class Astronaut {
         height = pHeight;
         isAlive = true;
         rec = new Rectangle(xpos, ypos, width, height);
-        rec2 = new Rectangle(xpos+20, ypos+20, width-40, height-40);
+        rec2 = new Rectangle(xpos+30, ypos+20, width-60, height-40);
         isBouncing=false;
         isControllable = false;
         isShot = pIsShot; // to allow for paddle-specific instructions in the move method
@@ -58,7 +58,7 @@ public class Astronaut {
         xpos = xpos + dx;
         ypos = ypos + dy;
         rec = new Rectangle(xpos, ypos, width, height);
-        rec2 = new Rectangle(xpos+20, ypos+20, width-40, height-40);
+        rec2 = new Rectangle(xpos+30, ypos+20, width-60, height-40);
 
         if (isControllable) {
             if (spaceshipIsLeft) {
