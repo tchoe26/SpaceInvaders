@@ -274,6 +274,8 @@ public class BasicGameApp implements Runnable, KeyListener {
 			g.drawString(String.valueOf(score), 250, 50);
 		} else {
 			g.drawImage(endscreen, 0, 0, 500, 700, null);
+			g.setFont(new Font("Ser", Font.PLAIN, 50));
+			g.drawString(String.valueOf(score), 250, 225);
 		}
 		g.dispose();
 		bufferStrategy.show();
