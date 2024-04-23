@@ -19,6 +19,7 @@ import java.awt.image.BufferStrategy;
 import java.awt.*;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import java.sql.SQLOutput;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
@@ -56,7 +57,7 @@ public class BasicGameApp implements Runnable, KeyListener {
 	Astronaut[] bullet = new Astronaut[9999];
 	public Image bulletPic;
 	int bulletRows = 5;
-	int bulletColumns=13;
+	int bulletColumns=12;
 	boolean isCooldown;
 	public Image endscreen;
 //	boolean allDead = true;
@@ -66,6 +67,7 @@ public class BasicGameApp implements Runnable, KeyListener {
 	int score;
 	int level=1;
 	int lives=3;
+	boolean isStarted;
 
 	// Main method definition
 	// This is the code that runs first and automaticallyddddd
@@ -76,11 +78,16 @@ public class BasicGameApp implements Runnable, KeyListener {
 
 
 	void shootBullet() {
-		bullet[bulletCounter].xpos = spaceship.xpos + 45;
-		bullet[bulletCounter].ypos = spaceship.ypos + 10;
-		bullet[bulletCounter].dy = -50;
-		bulletCounter++;
-		shootTime = (int) System.currentTimeMillis();
+
+		//this is to stop the ship from shooting if the game is over (because it's
+		// still technically running so you can increase your score)
+		if (spaceship.isAlive) {
+			bullet[bulletCounter].xpos = spaceship.xpos + 45;
+			bullet[bulletCounter].ypos = spaceship.ypos + 10;
+			bullet[bulletCounter].dy = -50;
+			bulletCounter++;
+			shootTime = (int) System.currentTimeMillis();
+		}
 	}
 
 	// Constructor Method
@@ -152,107 +159,122 @@ public class BasicGameApp implements Runnable, KeyListener {
 
 	public void moveThings() {
 
-		for (int t=0; t<bulletRows; t++) {
-			for (int v=0; v<bulletColumns; v++) {
+		//before the isStarted check so aliens can move harmelssly on start scr
+		for (int t = 0; t < bulletRows; t++) {
+			for (int v = 0; v < bulletColumns; v++) {
 				invader[t][v].wrap();
 				//invader[t][v].dx=3;
 
 			}
+			//alien descent - faster and more frequent as levels progress
+			if ((int)(Math.random()*(100-(5*level))) == 1) {
+				//select random invader to start descending
+				int temp1 = ((int) (Math.random() * bulletRows));
+				int temp2 = ((int) (Math.random() * bulletColumns));
+				invader[temp1][temp2].dx = ((int) (Math.random() * 8) - 4);
+				invader[temp1][temp2].dy = 3 + (2 * level);
+
+				//crude fix to stop a certain bug where invader is stuck on outside
+				// in an unshootable position
+				if (invader[temp1][temp2].dx==0) {
+					invader[temp1][temp2].dx=1;
+				}
+			}
 		}
-		spaceship.move();
+		if (isStarted) {
 
+			spaceship.move();
 
-		//alien descent
-		if ((int)(Math.random()*30)==1){
-			int temp1 = ((int)(Math.random()*bulletRows));
-			int temp2 = ((int)(Math.random()*bulletColumns));
-			invader[temp1][temp2].dx = ((int)(Math.random()*8)-4);
-			invader[temp1][temp2].dy = 3+(2*level);
-		}
+			//player dies
+			for (int t = 0; t < bulletRows; t++) {
+				for (int v = 0; v < bulletColumns; v++) {
+					if (invader[t][v].rec.intersects(spaceship.rec2) && invader[t][v].isAlive && (invader[t][v].xpos > 0) && (invader[t][v].xpos < 460)) {
+						lives = lives - 1;
+						pause(1000);
+						reset();
+						break;
+					}
+					//invader[t][v].dx=3;
 
-		//player dies
-		for (int t=0; t<bulletRows; t++) {
-			for (int v=0; v<bulletColumns; v++) {
-                if (invader[t][v].rec.intersects(spaceship.rec2) && invader[t][v].isAlive) {
-					lives=lives-1;
-					pause(1000);
-					reset();
+				}
+			}
+			if (lives == 0) {
+				spaceship.isAlive = false;
+			}
+
+			timeSinceShot = (int) (System.currentTimeMillis() - shootTime);
+
+			//limit movement tos screen
+			if (spaceship.xpos < -25) {
+				spaceship.xpos = -25;
+			}
+			if (spaceship.xpos > 525 - spaceship.width) {
+				spaceship.xpos = 525 - spaceship.width;
+			}
+
+			for (Astronaut astronaut : bullet) {
+				astronaut.move();
+				//bullet life (optimization)
+				for (int z = 0; z < bullet.length; z++) {
+					if (astronaut.ypos < -20) {
+						astronaut.isAlive = false;
+						break;
+					}
+				}
+
+				//shooting invaders
+				for (int j = 0; j < bulletRows; j++) {
+					for (int k = 0; k < bulletColumns; k++) {
+						if (astronaut.rec.intersects(invader[j][k].rec) && invader[j][k].isAlive && astronaut.isAlive) {
+							invader[j][k].isAlive = false;
+							astronaut.isAlive = false;
+							score = score + 100 * level;
+
+						}
+
+					}
+				}
+
+			}
+
+			//level up
+			boolean allDead = true;
+			int numalive = 0;
+			for (int j = 0; j < bulletRows; j++) {
+				for (int k = 0; k < bulletColumns; k++) {
+					if (invader[j][k].isAlive) {
+						allDead = false;
+						numalive++;
+						break;
+						//System.out.println(invader[j][k].xpos + "and" + invader[j][k].ypos);
+					}
+				}
+				if (!allDead) {
 					break;
 				}
-				//invader[t][v].dx=3;
-
 			}
-		}
-		if (lives==0) {
-			spaceship.isAlive=false;
-		}
 
-		timeSinceShot = (int)(System.currentTimeMillis()-shootTime);
-
-		//limit movement to screen
-		if (spaceship.xpos<-25) {
-			spaceship.xpos=-25;
-		}
-		if (spaceship.xpos>525-spaceship.width) {
-			spaceship.xpos=525-spaceship.width;
-		}
-
-        for (Astronaut astronaut : bullet) {
-            astronaut.move();
-            //bullet life (optimization)
-            for (int z = 0; z < bullet.length; z++) {
-                if (astronaut.ypos < -20) {
-                    astronaut.isAlive = false;
-                    break;
-                }
-            }
-
-            //shooting invaders
-            for (int j = 0; j < bulletRows; j++) {
-                for (int k = 0; k < bulletColumns; k++) {
-                    if (astronaut.rec.intersects(invader[j][k].rec) && invader[j][k].isAlive && astronaut.isAlive) {
-                        invader[j][k].isAlive = false;
-                        astronaut.isAlive = false;
-						score=score+100*level;
-
-                    }
-
-                }
-            }
-
-        }
-
-		//level increase
-		boolean allDead = true;
-		int numalive = 0;
-		for (int j = 0; j < bulletRows; j++) {
-			for (int k = 0; k < bulletColumns; k++) {
-				if (invader[j][k].isAlive) {
-					allDead=false;
-					numalive++;
-					//System.out.println("test");
-					//break;
-				}
+			if (allDead) {
+				//System.out.println("all dead");
+				level += 1;
+				reset();
+				pause(1000);
 			}
-		}
-		//if
-		if (allDead) {
-			System.out.println("all dead");
-			level+=1;
-			reset();
-		} else{
-			System.out.println("alive" + numalive);
-		}
 
+		}
 	}
 
 	public void reset() {
 		for (int i = 0; i < bulletRows; i++) {
 			for (int j = 0; j < bulletColumns; j++) {
-				invader[i][j] = new Astronaut(10 + (41 * j), 50 + (50 * i), 40, 30, 0, 0, false);
+				invader[i][j].xpos = 10 + (41 * j);
+				invader[i][j].ypos = 50 + (50 * i);
+				invader[i][j].isAlive = true;
+				invader[i][j].dx=0;
+				invader[i][j].dy=0;
+
 			}
 		}
-
 	}
 
 
@@ -293,6 +315,8 @@ public class BasicGameApp implements Runnable, KeyListener {
 		Graphics2D g = (Graphics2D) bufferStrategy.getDrawGraphics();
 		g.clearRect(0, 0, WIDTH, HEIGHT);
 
+
+
 		if (spaceship.isAlive) {
 			//draw the image of the astronaut
 			g.drawImage(blackBackground, 0, 0, WIDTH, HEIGHT, null);
@@ -329,8 +353,27 @@ public class BasicGameApp implements Runnable, KeyListener {
 			g.setFont(new Font("Ser", Font.PLAIN, 50));
 			g.drawString(String.valueOf(score), 250, 225);
 		}
+		//start screen/text
+
+		if (!isStarted) {
+			g.setFont(new Font("Ser", Font.PLAIN, 70));
+			g.drawString("Astro Assault", 30, 100);
+			g.setFont(new Font("Ser", Font.PLAIN, 30));
+			g.drawString("press space to start", 200, 550);
+			g.setFont(new Font("Ser", Font.PLAIN, 15));
+			g.drawString("Welcome to Astro Assault! Press space to shoot the aliens.", 10, 320);
+			g.drawString("You will level up when you successfully clear all aliens.", 10, 340);
+			g.drawString("Do not crash! Use A and D to move your spaceship.", 10, 390);
+			g.drawString("The speed and aggressiveness of the aliens will increase as you level up,", 10, 440);
+			g.drawString("but so will your score for shooting them. Have fun!", 10, 460);
+			g.setFont(new Font("Ser", Font.PLAIN, 10));
+			g.drawString("made by teddy choe :)", 10, 600);
+
+		}
+
 		g.dispose();
 		bufferStrategy.show();
+
 	}
 
 
@@ -347,10 +390,14 @@ public class BasicGameApp implements Runnable, KeyListener {
 		if (e.getKeyCode()==68) {
 			spaceship.spaceshipIsRight = true;
 		}
-		if (e.getKeyCode() ==32 && !isCooldown && (timeSinceShot>150 || timeSinceShot<1)) {
+		if (e.getKeyCode() ==32 && isStarted && !isCooldown && (timeSinceShot>150 || timeSinceShot<1)) {
 			shootBullet();
 			
 			isCooldown=true;
+		}
+		if (e.getKeyCode()==32 && !isStarted) {
+			isStarted=true;
+			reset();
 		}
 
 		//reset gamed
@@ -369,8 +416,4 @@ public class BasicGameApp implements Runnable, KeyListener {
 		}
 
 	}
-
-
-
-
 }
