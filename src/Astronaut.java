@@ -91,7 +91,7 @@ public class Astronaut {
         move();
     }
     public void specialBounce() {
-        if ((xpos<0||xpos>(500-width)) && !isBouncing) {
+        if ((xpos<0||xpos>(500-width))) {
             dx = -dx;
             isBouncing=true;
         }
