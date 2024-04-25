@@ -22,6 +22,7 @@ public class Astronaut {
     //a boolean to denote if the hero is alive or dead.
     public Rectangle rec;
     public Rectangle rec2;
+    public Rectangle rec3;
     public boolean spaceshipIsLeft;
 
     public boolean spaceshipIsRight;
@@ -48,6 +49,7 @@ public class Astronaut {
         isAlive = true;
         rec = new Rectangle(xpos, ypos, width, height);
         rec2 = new Rectangle(xpos+30, ypos+20, width-60, height-40);
+        rec3 = new Rectangle(xpos, ypos-4, width, height+8);
         isBouncing=false;
         isControllable = false;
         isShot = pIsShot; // to allow for paddle-specific instructions in the move method

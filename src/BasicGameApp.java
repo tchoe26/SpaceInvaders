@@ -84,7 +84,7 @@ public class BasicGameApp implements Runnable, KeyListener {
 		if (spaceship.isAlive) {
 			bullet[bulletCounter].xpos = spaceship.xpos + 45;
 			bullet[bulletCounter].ypos = spaceship.ypos + 10;
-			bullet[bulletCounter].dy = -50;
+			bullet[bulletCounter].dy = -40;
 			bulletCounter++;
 			shootTime = (int) System.currentTimeMillis();
 		}
@@ -107,8 +107,8 @@ public class BasicGameApp implements Runnable, KeyListener {
 		//bullet
 		bulletPic = Toolkit.getDefaultToolkit().getImage("bullet.png");
 		for (int i = 0; i < bullet.length; i++) {
-			bullet[i] = new Astronaut(-100, 500, 2, 10, 0, 0, false);
-		}
+			bullet[i] = new Astronaut(-100, 500, 3, 15, 0, 0, false);
+		}//3, 15
 		//invaders
 		invaderPic = Toolkit.getDefaultToolkit().getImage("spaceinvader2.png");
 		for (int i = 0; i < bulletRows; i++) {
@@ -164,7 +164,6 @@ public class BasicGameApp implements Runnable, KeyListener {
 			for (int v = 0; v < bulletColumns; v++) {
 				invader[t][v].specialBounce();
 				//invader[t][v].dx=3;
-
 			}
 			//alien descent - faster and more frequent as levels progress
 			if ((int)(Math.random()*(150-(10*level))) == 1) {
@@ -172,7 +171,7 @@ public class BasicGameApp implements Runnable, KeyListener {
 				int temp1 = ((int) (Math.random() * bulletRows));
 				int temp2 = ((int) (Math.random() * bulletColumns));
 				invader[temp1][temp2].dx = ((int) (Math.random() * 8) - 4);
-				invader[temp1][temp2].dy = 2 + (2*level);
+				invader[temp1][temp2].dy = 1 + (2*level);
 				//crude fix to stop a certain bug where invader is stuck on outside
 				if (invader[temp1][temp2].dx==0) {
 					invader[temp1][temp2].dx=1;
@@ -186,8 +185,9 @@ public class BasicGameApp implements Runnable, KeyListener {
 				for (int v = 0; v < bulletColumns; v++) {
 					if (invader[t][v].rec.intersects(spaceship.rec2) && invader[t][v].isAlive && (invader[t][v].xpos > 0) && (invader[t][v].xpos < 460)) {
 						lives = lives - 1;
-						pause(1000);
+						pause(500);
 						reset();
+						pause(500);
 						break;
 					}
 					//invader[t][v].dx=3;
@@ -225,7 +225,7 @@ public class BasicGameApp implements Runnable, KeyListener {
 							invader[j][k].isAlive = false;
 							astronaut.isAlive = false;
 							score = score + 100 * level;
-
+							break;
 						}
 
 					}
@@ -268,6 +268,7 @@ public class BasicGameApp implements Runnable, KeyListener {
 				invader[i][j].isAlive = true;
 				invader[i][j].dx=0;
 				invader[i][j].dy=0;
+				pause(500);
 
 			}
 		}
